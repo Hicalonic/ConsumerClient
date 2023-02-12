@@ -6,38 +6,34 @@ public class Chef implements Runnable {
     private String name;
     private int platesAmount;
     private Restaurant restaurant;
+    private Deque<Plates> chefPlates;
 
     public Chef(String name, int platesAmount, Restaurant restaurant) {
         this.platesAmount = platesAmount;
         this.restaurant = restaurant;
         this.name = name;
+        this.chefPlates = new ArrayDeque<>(platesAmount);
+        createPlates();
     }
 
     @Override
     public void run() {
-//        while (this.platesAmount > 0) {
-//            try {
-//                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-        Deque<Plates> platesToSend = platesCreated();
-        System.out.println("\u001B[33mPlates sent by Chef " + this.name + " " + platesToSend.toString().concat("\u001B[0m"));
-        restaurant.send(platesToSend);
-        try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5000));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        while (!chefPlates.isEmpty()) {
+            Plates plate = chefPlates.removeLast();
+            System.out.println("\u001B[33mChef " + this.name + " sent a " + plate.toString().concat("\u001B[0m"));
+            restaurant.send(plate);
+            try {
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2200));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private Deque <Plates> platesCreated() {
-        Deque <Plates> platesToSend = new ArrayDeque<>(this.platesAmount);
+    private void createPlates() {
         for(int i = 0;i< this.platesAmount;i++) {
-            platesToSend.add(cookSomething());
+            chefPlates.add(cookSomething());
         }
-        return platesToSend;
     }
 
     private Plates cookSomething() {
@@ -50,7 +46,5 @@ public class Chef implements Runnable {
             default: yield Plates.DESERT;
         };
     }
-
-
 }
 

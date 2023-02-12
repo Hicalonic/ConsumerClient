@@ -1,16 +1,13 @@
-import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class Restaurant {
     private Deque<Plates> deque;
     private int currentNumOfPlates;
-    boolean flag = true;
-
     public Restaurant(Deque<Plates> deque) {
         this.deque = deque;
     }
 
-    public synchronized void send(Deque<Plates> plates) {
+    public synchronized void send(Plates plate) {
         while (currentNumOfPlates > 20) {
             try {
                 wait();
@@ -18,15 +15,13 @@ public class Restaurant {
                 throw new RuntimeException(e);
             }
         }
-        plates.stream().forEach(e -> this.deque.offerFirst(e));
-        System.out.println("\u001B[32m [ Current available dishes -->> " + this.deque.toString().concat("\u001B[0m"));
+        System.out.println("\u001B[32m [" +currentNumOfPlates+ " Current available dishes -->> " + this.deque.toString().concat("\u001B[0m"));
+        this.deque.offerFirst(plate);
         currentNumOfPlates = this.deque.size();
-        System.out.println(currentNumOfPlates);
         notifyAll();
     }
 
-    public synchronized Deque<Plates> receive(int amount) {
-        Deque<Plates> platesTaken = new ArrayDeque<>();
+    public synchronized Plates receive() {
         while (currentNumOfPlates < 1) {
             try {
                 wait();
@@ -34,12 +29,11 @@ public class Restaurant {
                 throw new RuntimeException(e);
             }
         }
-        for (int i = 0; i < amount; i++) {
-            platesTaken.addFirst(this.deque.removeLast());
-        }
+        System.out.println("\u001B[32m [" +currentNumOfPlates+ " Current available dishes -->> " + this.deque.toString().concat("\u001B[0m"));
+        Plates plate  = this.deque.removeLast();
         currentNumOfPlates = this.deque.size();
         notifyAll();
-        return platesTaken;
+        return plate;
     }
 }
 
